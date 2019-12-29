@@ -1,0 +1,37 @@
+sudo: required
+
+services:
+  - docker
+
+language: node_js
+node_js:
+  - '10'
+
+cache:
+  yarn: true
+  directories:
+  - node_modules
+
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
+install:
+  - sudo mkdir /opt/hermes
+  - sudo chown travis:travis /opt/hermes
+  - docker-compose pull
+  - npx yarn install
+  - docker pull hadolint/hadolint
+
+script:
+  - npx yarn dev:docker:db
+  - npx yarn dev:lint
+  - export MONGO_HOSTS="localhost:27017" MONGO_DB_NAME="ambrosus" && npx yarn migrate
+  - npx yarn test
+  - docker run --rm -i hadolint/hadolint < Dockerfile
+
+notifications:
+  slack:
+    secure: enEOcjHakHuQ8nB7eknvFZZWr0dIHAcudtx6W0kzyRn6o6rQ+nzamcXR1bljDOR2TljXd8J5mJOEUP4iReINYCCp99r3mizPe8d1hsNmv9nkiMLMUJTPZ5nvJrV17g0b3stWpNRX1easO79nGoPgE/jJPJPfge9FFQRC/rZqyDKIJF1jqpEMnb/Ev2IWVtiGU5oXLyszF95LrMTy8ZxNL5gLmuDNHiYDJU0mLxN55PkNnmkMQ+hHs4YNv5bTG68hnVRxoLKaV7si7VZJOt7WE4QJPXrzBiSBEiCS0M0WSPoOLl8DAoy4kO6bUN1D0fWsBb1F6jD0tH4dBbnt8uFS0nbeYu0RA3beWgol8W4GHi/yMwnTq3iJpEYGGdkANRaIhY5vzLsrSIAlt3JpFdPnG79KvnoDP+1HHeTXLiqi9FLcv5Q7JA7H2B/imGZf2U/wMlvfzChEq1vXJH8yhClVhq445zqByxoDrOdfuG8wcjnWOLE6n/UOnVAxNKuZsyBwJ9uQAmfdH0iz/wZYCQUvWXvmccX1DtlelMOjNRyvFTVIbyoXnIciF1mcjtxd5ByDM1FcDy6QtE/k7LebnlICxoIuW1b1LgGs6ugrJga0RWKXrYUbHWu3UgnZru9f3X4U+svXgdV/Tjr3a2Y8DWw4/6N07zjMvWsrQCsJcsg35sc=
