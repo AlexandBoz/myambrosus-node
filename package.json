@@ -3,7 +3,7 @@
   "description": "",
   "version": "1.1.4",
   "author": "Ambrosus",
-  "repository": "git@github.com:ambrosus/ambrosus-node.git",
+  "repository": "git@github.com:AlexandBoz/myambrosus-node.git",
   "private": false,
   "license": "MPL-2.0-no-copyleft-exception",
   "scripts": {
